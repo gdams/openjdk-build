@@ -24,10 +24,33 @@
 
 # You can set the JDK boot directory with the JDK_BOOT_DIR environment variable
 
-set -eu
-
 OS_MACHINE_NAME=$(uname -m)
 OS_KERNEL_NAME=$(uname | awk '{print tolower($0)}')
+
+counter=0
+for i in "$@"; do
+  let counter++
+  case "$i" in
+    "--version" | "-v")
+      let counter++
+      string="\$$counter"
+      export OPENJDK_VERSION=$(echo "$@" | awk "{print $string}")
+      ;;
+  esac
+done
+
+if [ "$OPENJDK_VERSION" == "jdk9" ]; then
+  export JDK_PATH="jdk"
+elif [ "$OPENJDK_VERSION" == "jdk8u" ]; then
+  export JDK_PATH="j2sdk-image"
+else
+  echo "Please specify a version with --version or -v , either jdk9 or jdk8u"
+  man ./makejdk-any-platform.1
+  exit 1
+fi
+
+export REPOSITORY="${REPOSITORY:-adoptopenjdk/openjdk-$OPENJDK_VERSION}";
+export REPOSITORY="$(echo "${REPOSITORY}" | awk '{print tolower($0)}')";
 
 if [[ "$OS_MACHINE_NAME" == "s390x" ]] ; then
    export JVM_VARIANT=${JVM_VARIANT:-zero}
