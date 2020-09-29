@@ -1,13 +1,14 @@
 name: Build
 
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
+    types:
+      - labeled
 
 jobs:
   build_linux:
     name: Linux
-    if: contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, 'build-linux')
+    if: github.event.label.name == 'build-linux'
     runs-on: [ubuntu-latest]
     container:
       image: adoptopenjdk/centos7_build_image
@@ -40,7 +41,7 @@ jobs:
 
   build_macos:
     name: macOS
-    if: contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, 'build-mac')
+    if: github.event.label.name == 'build-mac'
     runs-on: [macos-latest]
     strategy:
       matrix:
