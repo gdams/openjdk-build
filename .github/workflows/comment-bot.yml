@@ -1,6 +1,6 @@
 on:
   pull_request_target:
-    types: [ opened, reopened ]
+    types: [ opened ]
 
 jobs:
   comment:
@@ -21,4 +21,4 @@ jobs:
             - `build-all` - trigger all github actions builds
 
             If you are making a change to the jenkins pipeline scripts then please run the following command:
-            - `run-test` - this will trigger all jenkins builds in a matrix
+            - `run-tests` - this will trigger all jenkins builds in a matrix
