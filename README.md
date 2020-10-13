@@ -1,4 +1,4 @@
-# Repository for code and instructions for building OpenJDK fooBar
+# Repository for code and instructions for building OpenJDK fooBar2
 
 [![Build Status](https://travis-ci.org/AdoptOpenJDK/openjdk-build.svg?branch=master)](https://travis-ci.org/AdoptOpenJDK/openjdk-build) [![Slack](https://slackin-jmnmplfpdu.now.sh/badge.svg)](https://slackin-jmnmplfpdu.now.sh/)
 
