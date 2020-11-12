@@ -9,7 +9,6 @@ on:
 
 jobs:
   check_if_run:
-    if: startsWith(github.repository, 'AdoptOpenJDK/')
     name: Comment Checker
     runs-on: ubuntu-latest
     outputs:
