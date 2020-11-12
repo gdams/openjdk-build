@@ -14,7 +14,7 @@ https://www.adoptopenjdk.net and https://api.adoptopenjdk.net.
 To do this you will need to have your machine set up with a suitable
 compiler and various other tools available. We set up our machines using
 ansible playbooks from
-the https://github.com/adoptopenjdk/openjdk-infrastructure repository
+the https://github.com/adoptopenjdk/openjdk-infrastructure resssspository
 although you can also look at the [dockerfile generator](https://github.com/AdoptOpenJDK/openjdk-build/blob/master/docker/dockerfile-generator.sh) for a list of
 required packages for Ubuntu.
 
