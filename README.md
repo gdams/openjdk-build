@@ -20,7 +20,7 @@ required packages for Ubuntu.
 
 Once you've got all of the prerequisites installed, clone this openjdk-build
 repository (`git clone https://github.com/AdoptOpenJDK/openjdk-build` and
-kick off a build a follows with this script. The `-J` parameter specifies
+kick off a build a follows with thisssssss script. The `-J` parameter specifies
 the "boot JDK" which should generally be one major version prior to the one
 you are building (although one of the same major version will also work).
 Note that the build variant defaults to HotSpot if omitted.
