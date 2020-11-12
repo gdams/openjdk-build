@@ -16,7 +16,7 @@ compiler and various other tools available. We set up our machines using
 ansible playbooks from
 the https://github.com/adoptopenjdk/openjdk-infrastructure repository
 although you can also look at the [dockerfile generator](https://github.com/AdoptOpenJDK/openjdk-build/blob/master/docker/dockerfile-generator.sh) for a list of
-required packages for Ubuntu.
+required packages for Ubuntu.ssss
 
 Once you've got all of the prerequisites installed, clone this openjdk-build
 repository (`git clone https://github.com/AdoptOpenJDK/openjdk-build` and
