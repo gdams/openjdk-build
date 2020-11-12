@@ -25,7 +25,7 @@ jobs:
 
   build_macos:
     needs: check_if_run
-    if: startsWith(github.repository, 'AdoptOpenJDK/') && needs.check_if_run.outputs.checker == 'true'
+    if: needs.check_if_run.outputs.checker == 'true'
     name: build
     runs-on: macos-latest
     strategy:
