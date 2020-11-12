@@ -25,7 +25,7 @@ the "boot JDK" which should generally be one major version prior to the one
 you are building (although one of the same major version will also work).
 Note that the build variant defaults to HotSpot if omitted.
 
-```
+```sfdfdfsdf
 ./makejdk-any-platform.sh (-J /usr/lib/jvm/jdk-xx) (--build-variant <hotspot|openj9|corretto|SapMachine|dragonwell>) <jdk8u|jdk11u|jdk15u|jdk>
 ```
 e.g.
