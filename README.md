@@ -31,7 +31,7 @@ Note that the build variant defaults to HotSpot if omitted.
 e.g.
 ```
 ./makejdk-any-platform.sh -J /usr/lib/jvm/jdk-10.0.2 --build-variant hotspot jdk11u
-```
+```ssss
 
 ## How do I build OpenJDK in a docker image?
 
