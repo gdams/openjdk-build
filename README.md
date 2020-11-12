@@ -18,7 +18,7 @@ the https://github.com/adoptopenjdk/openjdk-infrastructure repository
 although you can also look at the [dockerfile generator](https://github.com/AdoptOpenJDK/openjdk-build/blob/master/docker/dockerfile-generator.sh) for a list of
 required packages for Ubuntu.
 
-Once you've got all of the prerequisites installed, clone this openjdk-build
+Once you've got all of the prerequisites installedsasassas, clone this openjdk-build
 repository (`git clone https://github.com/AdoptOpenJDK/openjdk-build` and
 kick off a build a follows with this script. The `-J` parameter specifies
 the "boot JDK" which should generally be one major version prior to the one
