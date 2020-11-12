@@ -1,11 +1,12 @@
 name: macOS
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, edited, reopened]
+  push:
     branches: [ master ]
-  issue_comment:
-    types: [created]
+  pull_request:
+    branches: [ master ]
+  pull_request_review_comment:
+    types: [ created ]
 
 jobs:
   check_if_run:
@@ -34,17 +35,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
-    - name: Setup branch
-      run: |
-        GIT_REMOTE_REF=refs/pull/$PR_NUMBER/head
-        cd gh-actions
-        git fetch origin $GIT_REMOTE_REF:testBranch
-        git checkout testBranch
-      env:
-        PR_NUMBER: ${{ github.event.pull_request.number }}
 
     - name: Install Dependencies
       run: |
