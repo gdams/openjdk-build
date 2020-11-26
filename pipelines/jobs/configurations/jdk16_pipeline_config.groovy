@@ -19,7 +19,7 @@ class Config16 {
                         nightly: [],
                         weekly : []
                 ],
-                configureArgs       : '--enable-dtrace --host=aarch64-apple-darwin'
+                configureArgs       : '--enable-dtrace'
         ],
         
         x64MacXL    : [

@@ -74,9 +74,14 @@ if [ "$JAVA_FEATURE_VERSION" -gt 11 ]; then
       export ${BOOT_JDK_VARIABLE}="$bootDir/Contents/Home"
       if [ ! -d "$bootDir/Contents/Home/bin" ]; then
         mkdir -p "$bootDir"
+        # Needed until we have a boot JDK availble for aarch64
+        case "$ARCHITECTURE" in
+          "aarch64") downloadArch="x64";;
+          *) downloadArch="$ARCHITECTURE";;
+        esac
         echo "Downloading GA release of boot JDK version ${BOOT_JDK_VERSION}..."
         releaseType="ga"
-        apiUrlTemplate="https://api.adoptopenjdk.net/v3/binary/latest/\${BOOT_JDK_VERSION}/\${releaseType}/mac/\${ARCHITECTURE}/jdk/\${VARIANT}/normal/adoptopenjdk"
+        apiUrlTemplate="https://api.adoptopenjdk.net/v3/binary/latest/\${BOOT_JDK_VERSION}/\${releaseType}/mac/\${downloadArch}/jdk/\${VARIANT}/normal/adoptopenjdk"
         apiURL=$(eval echo ${apiUrlTemplate})
         # make-adopt-build-farm.sh has 'set -e'. We need to disable that
         # for the fallback mechanism, as downloading of the GA binary might
@@ -119,4 +124,9 @@ if [ "${VARIANT}" == "${BUILD_VARIANT_OPENJ9}" ]; then
     export TAR=gtar
     export SDKPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
   fi
+fi
+
+if [ "${ARCHITECTURE}" == "aarch64" ]
+then
+  export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --host=aarch64-apple-darwin"
 fi
