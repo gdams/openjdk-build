@@ -3,6 +3,9 @@ targetConfigurations = [
                 "hotspot",
                 "openj9"
         ],
+        "aarch64Mac"  : [
+                "hotspot"
+        ]
         "x64MacXL"    : [
                 "openj9"
         ],

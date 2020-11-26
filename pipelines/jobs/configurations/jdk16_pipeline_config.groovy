@@ -10,6 +10,17 @@ class Config16 {
                 ],
                 configureArgs       : '--enable-dtrace'
         ],
+
+        aarch64Mac    : [
+                os                  : 'mac',
+                arch                : 'aarch64',
+                additionalNodeLabels: 'macos10.14',
+                test                : [
+                        nightly: [],
+                        weekly : []
+                ],
+                configureArgs       : '--enable-dtrace --host=aarch64-apple-darwin'
+        ],
         
         x64MacXL    : [
                 os                   : 'mac',

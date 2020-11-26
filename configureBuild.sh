@@ -163,6 +163,9 @@ setRepository() {
     suffix="adoptopenjdk/openjdk-aarch32-jdk8u";
   elif [ "${BUILD_CONFIG[OPENJDK_CORE_VERSION]}" == "${JDK8_CORE_VERSION}" ] && [ "${BUILD_CONFIG[OS_ARCHITECTURE]}" == "aarch64" ]; then
     suffix="adoptopenjdk/openjdk-aarch64-jdk8u";
+  elif [ "${BUILD_CONFIG[OPENJDK_CORE_VERSION]}" == "${JDKHEAD_CORE_VERSION}" ] && [ "${BUILD_CONFIG[OS_ARCHITECTURE]}" == "aarch64" ] && [ "${BUILD_CONFIG[OS_KERNEL_NAME]}" == "darwin" ]; then
+    suffix="openjdk/aarch64-port";
+    BUILD_CONFIG[BRANCH]="jdk-macos"
   else
     suffix="adoptopenjdk/openjdk-${BUILD_CONFIG[OPENJDK_FOREST_NAME]}"
   fi
