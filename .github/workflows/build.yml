@@ -1,93 +1,123 @@
-name: macOS
-
+name: "PR Comment Build Action"
 on:
-  push:
-    branches: [ master ]
-  pull_request_target:
-    types: [opened, synchronize, edited, reopened]
-    branches: [ master ]
   issue_comment:
-    types: [ created ]
-
+    types: [created]
 jobs:
-  check_if_run:
-    name: Comment Checker
+  parseComment:
     runs-on: ubuntu-latest
+    if: startsWith(github.event.comment.body, 'build') && github.event.issue.pull_request
     outputs:
-      checker: ${{steps.check.outputs.triggered }}
+      build_parameters: ${{ steps.argparse.outputs.build_parameters }}
     steps:
-      - uses: khan/pull-request-comment-trigger@master
-        id: check
-        with:
-          trigger: '/build-macos'
-          reaction: '+1'
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
-  build_macos:
-    needs: check_if_run
-    if: needs.check_if_run.outputs.checker == 'true'
-    name: build
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        version: [jdk8u, jdk11u, jdk15u, jdk]
-        vm: [hotspot, openj9]
-
-    steps:
-    - name: Github API Request
-      id: request
-      uses: octokit/request-action@v2.0.0
-      with:
-        route: ${{ github.event.issue.pull_request.url }}
+    - uses: actions/checkout@v2
+    - name: Parse parameters
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Checkout PR Branch
-      uses: actions/checkout@v2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        repository: ${{ fromJson(steps.request.outputs.data).head.repo.full_name }}
-        ref: ${{ steps.pr_data.outputs.branch }}
-
-    - name: Install Dependencies
+        args: ${{ github.event.comment.body }}
+      run: python3 .github/workflows/buildArgParse.py $args 2> log.txt
+      id: argparse
+    - name: Output log
+      if: failure()
+      # Store the contents of log.txt into an environment variable and escape characters to preserve newlines and other symbols.
       run: |
-        brew install bash binutils freetype gnu-sed nasm
-
-    - uses: actions/setup-java@v1
-      id: setup-java
+        log=$(cat log.txt)
+        log="${log//'%'/'%25'}"
+        log="${log//$'\n'/'%0A'}"
+        log="${log//$'\r'/'%0D'}"
+        log="${log/$'`'/'\`'}"
+        echo ::set-output name=log::$log
+      id: output_log
+    - name: Create error comment
+      if: failure()
+      uses: actions/github-script@v3
       with:
-        java-version: 7
-      if: matrix.version == 'jdk8u'
-        
-    - name: Build macOS
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          comment_body = `
+          @${{ github.actor }}
+          \`\`\`
+          ${{ steps.output_log.outputs.log }}
+          \`\`\`
+          No builds were started.
+          `;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment_body
+          })
+    - name: Get workflow run info
       run: |
-        export JAVA_HOME=$JAVA_HOME_11_X64
+        echo ::set-output name=url::$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+        echo ::set-output name=id::$GITHUB_RUN_ID
+      id: workflow_run_info
+    - name: Create success comment
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          comment_body = `
+          @${{ github.actor }} Build(s) started with the following parameters:
+          - platform: ${{ steps.argparse.outputs.platform }}
+          - jdk_version: ${{ steps.argparse.outputs.jdk_version }}
+          - jdk_impl: ${{ steps.argparse.outputs.jdk_impl }}
+          Workflow Run ID: [${{ steps.workflow_run_info.outputs.id }}](${{ steps.workflow_run_info.outputs.url }})
+          `;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment_body
+          })
+    - name: Echo parameters
+      run: |
+        echo platform: ${{ steps.argparse.outputs.platform }}
+        echo jdk_version: ${{ steps.argparse.outputs.jdk_version }}
+        echo jdk_impl: ${{ steps.argparse.outputs.jdk_impl }}
 
-        # Configure Xcode version explicitly. Default versions may change any time.
-        # Available versions: https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md#xcode
-        case "${{ matrix.version }}" in
-          "jdk8u"|"jdk11u"|"jdk15u")
-            export DEVELOPER_DIR="/Applications/Xcode_11.7.app/Contents/Developer"
-            ;;
-          "jdk")
-            export DEVELOPER_DIR="/Applications/Xcode_12.1.app/Contents/Developer"
-            ;;
-          *)
-            echo "Unknown JDK version: ${{ matrix.version }}" >&2
-            exit 1
-            ;;
-        esac
+  build_linux:
+    name: Build
+    runs-on: ${{ matrix.platform }}
+    container:
+      image: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.parseComment.outputs.build_parameters) }}
+    steps:
+    - uses: actions/checkout@v2
 
-        # Skip freetype build on jdk11+
-        if [ ${{ matrix.version }} != "jdk8u" ]; then
-          export BUILD_ARGS="--skip-freetype"
-        fi
-        ./build-farm/make-adopt-build-farm.sh
+    # get-pr step by @Simran-B https://github.com/actions/checkout/issues/331#issuecomment-707103442
+    - uses: actions/github-script@v3
+      id: get-pr
+      with:
+        script: |
+          const request = {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number
+          }
+          core.info(`Getting PR #${request.pull_number} from ${request.owner}/${request.repo}`)
+          try {
+            const result = await github.pulls.get(request)
+            return result.data
+          } catch (err) {
+            core.setFailed(`Request failed with error ${err}`)
+          }
+
+    - name: Build Linux
+      run: ./build-farm/make-adopt-build-farm.sh
       env:
         JAVA_TO_BUILD: ${{ matrix.version }}
         ARCHITECTURE: x64
         VARIANT: ${{ matrix.vm }}
-        TARGET_OS: mac
+        TARGET_OS: ${{ matrix.os }}
         FILENAME: OpenJDK.tar.gz
-        JDK7_BOOT_DIR: ${{ steps.setup-java.outputs.path }}
+        # Don't set the OS as we use both linux and alpine-linux
+        PLATFORM_CONFIG_LOCATION: AdoptOpenJDK/openjdk-build/master/build-farm/platform-specific-configurations
+
+
+    - uses: actions/upload-artifact@v2
+
+      name: Collect and Archive Artifacts
+      with:
+        name: ${{matrix.version}}-${{matrix.os}}-${{matrix.vm}}
+        path: workspace/target/*
