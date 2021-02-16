@@ -74,7 +74,7 @@ jobs:
         echo jdk_version: ${{ steps.argparse.outputs.jdk_version }}
         echo jdk_impl: ${{ steps.argparse.outputs.jdk_impl }}
 
-  build_linux:
+  build:
     name: Build
     runs-on: ${{ matrix.platform }}
     container:
@@ -106,9 +106,9 @@ jobs:
     - name: Build Linux
       run: ./build-farm/make-adopt-build-farm.sh
       env:
-        JAVA_TO_BUILD: ${{ matrix.version }}
+        JAVA_TO_BUILD: ${{ matrix.jdk_version }}
         ARCHITECTURE: x64
-        VARIANT: ${{ matrix.vm }}
+        VARIANT: ${{ matrix.jdk_impl }}
         TARGET_OS: ${{ matrix.os }}
         FILENAME: OpenJDK.tar.gz
         # Don't set the OS as we use both linux and alpine-linux
@@ -116,8 +116,68 @@ jobs:
 
 
     - uses: actions/upload-artifact@v2
-
       name: Collect and Archive Artifacts
       with:
         name: ${{matrix.version}}-${{matrix.os}}-${{matrix.vm}}
         path: workspace/target/*
+
+  reportStatus:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: build
+    steps:
+    - name: Get workflow run info
+      run: |
+        echo ::set-output name=url::$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+        echo ::set-output name=id::$GITHUB_RUN_ID
+      id: workflow_run_info
+    - uses: martialonline/workflow-status@v2
+      id: workflow_status
+    - name: Create fail comment
+      if: steps.workflow_status.outputs.status == 'failure'
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          comment_body = `
+          @${{ github.actor }} Build(s) failed.
+          Workflow Run ID: [${{ steps.workflow_run_info.outputs.id }}](${{ steps.workflow_run_info.outputs.url }})
+          `;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment_body
+          })
+    - name: Create cancelled comment
+      if: steps.workflow_status.outputs.status == 'cancelled'
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          comment_body = `
+          @${{ github.actor }} Build(s) cancelled.
+          Workflow Run ID: [${{ steps.workflow_run_info.outputs.id }}](${{ steps.workflow_run_info.outputs.url }})
+          `;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment_body
+          })
+    - name: Create success comment
+      if: steps.workflow_status.outputs.status == 'success'
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          comment_body = `
+          @${{ github.actor }} Build(s) successful.
+          Workflow Run ID: [${{ steps.workflow_run_info.outputs.id }}](${{ steps.workflow_run_info.outputs.url }})
+          `;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment_body
+          })
