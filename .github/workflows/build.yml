@@ -78,7 +78,7 @@ jobs:
     name: Build
     runs-on: ${{ matrix.platform }}
     container:
-      image: ${{ matrix.image }}
+      image: adoptopenjdk/centos7_build_image
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.parseComment.outputs.build_parameters) }}
