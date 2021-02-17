@@ -41,10 +41,11 @@ def main():
     raw_args = sys.argv[1 + len(keywords):]
 
     parser = argparse.ArgumentParser(prog=keyword, add_help=False)
+
     # Improvement: Automatically resolve the valid choices for each argument populate them below, rather than hard-coding choices.
     parser.add_argument('--platform', default=['linux'], nargs='+')
-    parser.add_argument('--jdk_version', default=['jdk8u'], nargs='+')
-    parser.add_argument('--jdk_impl', default=['hotspot'], nargs='+')
+    parser.add_argument('--jdk_version', default=['jdk8u, jdk11u, jdk16, jdk'], nargs='+')
+    parser.add_argument('--jdk_impl', default=['hotspot, openj9'], nargs='+')
     args = parser.parse_args(raw_args)
 
     output = {
