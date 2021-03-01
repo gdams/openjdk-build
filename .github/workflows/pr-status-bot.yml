@@ -1,0 +1,22 @@
+name: PR Status Bot
+
+on:
+  workflow_run:
+    workflows: ["Receive PR"]
+    types:
+      - completed
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 'Comment on PR'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            - [x] Checks complete
+            - [x] Number of reviews required
