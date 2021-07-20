@@ -1,5 +1,6 @@
 name: CA Certs Update
 on:
+  workflow_dispatch:
   schedule:
     # https://crontab.guru/every-night-at-midnight
     - cron: "0 0 * * *"
