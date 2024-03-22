@@ -15,8 +15,12 @@
 
 name: Check License Headers
 on:
-  pull_request:
+  pull_request_target:
     branches: [ master ]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   license-check:
@@ -24,6 +28,8 @@ jobs:
     name: License Headers 
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Check License Header
       uses: apache/skywalking-eyes/header@6b2529214f6b1ccee3ec92bb0adfeabf6f66f538 # v0.5.0
